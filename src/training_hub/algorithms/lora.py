@@ -955,7 +955,12 @@ def lora_sft(model_path: str,
     """
     from . import create_algorithm
 
-    algorithm = create_algorithm('lora_sft', backend)
+    algorithm = create_algorithm(
+        'lora_sft',
+        backend,
+        model_path_or_architecture=model_path,
+        trust_remote_code=kwargs.get('trust_remote_code'),
+    )
     return algorithm.train(
         model_path=model_path,
         data_path=data_path,

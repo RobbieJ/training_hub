@@ -20,7 +20,7 @@
 
 | Algorithm | InstructLab-Training | RHAI Innovation Mini-Trainer | PEFT | Unsloth | VERL | Status |
 |-----------|----------------------|------------------------------|------|---------|------|--------|
-| **Supervised Fine-tuning (SFT)** | ✅ | - | - | - | - | Implemented |
+| **Supervised Fine-tuning (SFT)** | ✅ | ✅ | - | - | - | Implemented |
 | Continual Learning (OSFT) | 🔄 | ✅ | 🔄 | - | - | Implemented |
 | **Low-Rank Adaptation (LoRA) + SFT** | - | - | - | ✅ | - | Implemented |
 | Direct Preference Optimization (DPO) | - | - | - | - | 🔄 | Planned |
@@ -38,7 +38,8 @@
 Fine-tune language models on supervised datasets with support for:
 - Single-node and multi-node distributed training
 - Configurable training parameters (epochs, batch size, learning rate, etc.)
-- InstructLab-Training backend integration
+- Auto backend routing (`backend="auto"`) with model-aware backend selection
+- InstructLab-Training and Mini-Trainer backend integration
 
 ```python
 from training_hub import sft
@@ -47,12 +48,33 @@ result = sft(
     model_path="Qwen/Qwen2.5-1.5B-Instruct",
     data_path="/path/to/data",
     ckpt_output_dir="/path/to/checkpoints",
+    backend="auto",
     num_epochs=3,
     effective_batch_size=8,
     learning_rate=1e-5,
     max_seq_len=256,
     max_tokens_per_gpu=1024,
 )
+```
+
+### Model Capability Introspection
+
+Training Hub exposes model/backend capability helpers:
+
+```python
+from training_hub import list_backends_for_model, list_model_capabilities
+
+caps = list_model_capabilities("mistralai/Ministral-3-3B-Instruct-2512")
+backends = list_backends_for_model(
+    "mistralai/Ministral-3-3B-Instruct-2512",
+    algorithm="sft",
+)
+```
+
+For Mistral 3 models, set `trust_remote_code=True` and use the `mistral3` extra:
+
+```bash
+pip install training-hub[mistral3]
 ```
 
 ### [Orthogonal Subspace Fine-Tuning (OSFT)](./algorithms/osft)

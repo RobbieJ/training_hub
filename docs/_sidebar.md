@@ -20,6 +20,8 @@
     * [osft()](/api/functions/osft)
     * [lora_sft()](/api/functions/lora_sft)
     * [create_algorithm()](/api/functions/create-algorithm)
+    * [list_model_capabilities()](/api/functions/list_model_capabilities)
+    * [list_backends_for_model()](/api/functions/list_backends_for_model)
   * Classes
     * [Algorithm](/api/classes/Algorithm)
     * [Backend](/api/classes/Backend)

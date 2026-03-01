@@ -10,6 +10,8 @@ from training_hub import create_algorithm
 algorithm = create_algorithm(
     algorithm_name: str,
     backend_name: str = None,
+    model_path_or_architecture: str | None = None,
+    trust_remote_code: bool | None = None,
     **kwargs
 ) -> Algorithm
 ```
@@ -35,7 +37,9 @@ result = algorithm.train(
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `algorithm_name` | `str` | **Required** | Name of the algorithm to create. Valid values: `"sft"`, `"osft"`. |
-| `backend_name` | `str` | `None` | Name of the backend to use. If `None`, uses the first available backend for the algorithm. |
+| `backend_name` | `str` | `None` | Name of the backend to use. Supports `"auto"` for model-aware backend routing. |
+| `model_path_or_architecture` | `str \| None` | `None` | Optional model reference used by auto-routing and compatibility checks. |
+| `trust_remote_code` | `bool \| None` | `None` | Optional compatibility flag passed to capability routing rules. |
 | `**kwargs` | `Any` | - | Additional keyword arguments passed to the algorithm's constructor. |
 
 ## Returns

@@ -33,13 +33,13 @@ Features:
 
 ### RHAI Innovation Mini-Trainer
 
-**Class:** [`MiniTrainerOSFTBackend`](/api/backends/mini-trainer)
+**Class:** [`MiniTrainerSFTBackend` and `MiniTrainerOSFTBackend`](/api/backends/mini-trainer)
 
-**Algorithm Support:** OSFT (Orthogonal Subspace Fine-Tuning)
+**Algorithm Support:** SFT (Supervised Fine-Tuning), OSFT (Orthogonal Subspace Fine-Tuning)
 
 **Package:** `rhai-innovation-mini-trainer`
 
-**Use Case:** High-performance distributed training implementation of the OSFT algorithm.
+**Use Case:** High-performance distributed training for SFT/OSFT with architecture-aware routing support.
 
 Features:
 - Specialized for OSFT algorithm

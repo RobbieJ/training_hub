@@ -17,7 +17,7 @@ def osft(
     learning_rate: float,
     ckpt_output_dir: str,
     data_output_dir: str | None = None,
-    backend: str = "mini-trainer",
+    backend: str = "auto",
     target_patterns: list[str] | None = None,
     seed: int | None = None,
     use_liger: bool | None = None,
@@ -26,6 +26,7 @@ def osft(
     is_pretraining: bool | None = None,
     block_size: int | None = None,
     document_column_name: str | None = None,
+    trust_remote_code: bool | None = None,
     lr_scheduler: str | None = None,
     warmup_steps: int | None = None,
     lr_scheduler_kwargs: dict[str, str] | None = None,
@@ -62,7 +63,8 @@ def osft(
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `backend` | `str` | `"mini-trainer"` | Backend implementation to use. Currently only `"mini-trainer"` is supported for OSFT. |
+| `backend` | `str` | `"auto"` | Backend implementation to use. `\"auto\"` resolves a model-aware backend (currently `\"mini-trainer\"` for OSFT). |
+| `trust_remote_code` | `bool` | `None` | Passed through to model/config loading paths for backends that support it. Required for some model families (for example Mistral 3). |
 
 #### Data Processing
 

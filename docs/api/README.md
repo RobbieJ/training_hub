@@ -14,6 +14,8 @@ Training Hub provides convenient top-level functions for common training tasks:
 | [`osft()`](/api/functions/osft) | Orthogonal subspace fine-tuning for continual learning | [Details](/api/functions/osft) |
 | [`lora_sft()`](/api/functions/lora_sft) | Parameter-efficient fine-tuning with LoRA | [Details](/api/functions/lora_sft) |
 | [`create_algorithm()`](/api/functions/create-algorithm) | Factory function to create algorithm instances | [Details](/api/functions/create-algorithm) |
+| [`list_model_capabilities()`](/api/functions/list_model_capabilities) | Inspect model/backend compatibility metadata | [Details](/api/functions/list_model_capabilities) |
+| [`list_backends_for_model()`](/api/functions/list_backends_for_model) | Get preferred backend ordering for a model and algorithm | [Details](/api/functions/list_backends_for_model) |
 
 ### Classes
 
@@ -37,7 +39,7 @@ Backend implementations that power the algorithms:
 | Backend | Algorithm Support | Learn More |
 |---------|------------------|------------|
 | [`InstructLabTrainingSFTBackend`](/api/backends/instructlab-training) | SFT | [Details](/api/backends/instructlab-training) |
-| [`MiniTrainerOSFTBackend`](/api/backends/mini-trainer) | OSFT | [Details](/api/backends/mini-trainer) |
+| [`MiniTrainerSFTBackend`, `MiniTrainerOSFTBackend`](/api/backends/mini-trainer) | SFT, OSFT | [Details](/api/backends/mini-trainer) |
 | [`UnslothLoRABackend`](/api/backends/unsloth) | LoRA | [Details](/api/backends/unsloth) |
 
 For an overview of the backend system, see [Backends Overview](/api/backends/).

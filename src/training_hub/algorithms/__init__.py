@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, Type
-import importlib
+
+from training_hub.model_capabilities import resolve_backend_selection
 
 
 class Algorithm(ABC):
@@ -79,18 +80,26 @@ class AlgorithmRegistry:
         return list(cls._backends[algorithm_name].keys())
 
 
-def create_algorithm(algorithm_name: str, backend_name: str = None, **kwargs) -> Algorithm:
+def create_algorithm(
+    algorithm_name: str,
+    backend_name: str = None,
+    model_path_or_architecture: str | None = None,
+    trust_remote_code: bool | None = None,
+    **kwargs,
+) -> Algorithm:
     """Factory function to create algorithm instances with specified backend."""
     algorithm_class = AlgorithmRegistry.get_algorithm(algorithm_name)
-    
-    # If no backend specified, try to use the first available one
-    if backend_name is None:
-        available_backends = AlgorithmRegistry.list_backends(algorithm_name)
-        if not available_backends:
-            raise ValueError(f"No backends available for algorithm '{algorithm_name}'")
-        backend_name = available_backends[0]
-    
+
+    available_backends = AlgorithmRegistry.list_backends(algorithm_name)
+    backend_name = resolve_backend_selection(
+        algorithm_name=algorithm_name,
+        backend_name=backend_name,
+        available_backends=available_backends,
+        model_path_or_architecture=model_path_or_architecture,
+        trust_remote_code=trust_remote_code,
+    )
+
     backend_class = AlgorithmRegistry.get_backend(algorithm_name, backend_name)
     backend_instance = backend_class()
-    
+
     return algorithm_class(backend=backend_instance, **kwargs)

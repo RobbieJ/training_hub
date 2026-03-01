@@ -1,4 +1,5 @@
 import os
+import inspect
 from typing import Literal, get_origin, get_args, Union
 from dataclasses import fields
 import warnings
@@ -60,6 +61,7 @@ class OSFTAlgorithm(Algorithm):
         is_pretraining: bool | None = None,
         block_size: int | None = None,
         document_column_name: str | None = None,
+        trust_remote_code: bool | None = None,
         # Torchrun parameters for multi-node support
         nproc_per_node: Literal['auto', 'gpu'] | int | None = None,
         nnodes: int | None = None,
@@ -148,6 +150,8 @@ class OSFTAlgorithm(Algorithm):
             document_column_name (str | None):
                 Column name containing raw documents when `is_pretraining=True`.
                 Defaults to "document" when not provided.
+            trust_remote_code (bool | None):
+                Enable loading model/config classes that require remote custom code.
             nproc_per_node (Literal['auto', 'gpu'] | int): Number of processes (GPUs) per node for distributed training.
             nnodes (int): Total number of nodes for distributed training.
             node_rank (int): Rank of this node (0 to nnodes-1) for distributed training.
@@ -206,6 +210,7 @@ class OSFTAlgorithm(Algorithm):
             'is_pretraining': is_pretraining,
             'block_size': block_size,
             'document_column_name': document_column_name,
+            'trust_remote_code': trust_remote_code,
             # scheduler params
             'lr_scheduler': lr_scheduler,
             'lr_scheduler_kwargs': lr_scheduler_kwargs,
@@ -291,6 +296,7 @@ class OSFTAlgorithm(Algorithm):
             'is_pretraining': bool,
             'block_size': int,
             'document_column_name': str,
+            'trust_remote_code': bool,
             'nproc_per_node': Literal['auto', 'gpu'] | int,
             'nnodes': int,
             'node_rank': int,
@@ -456,6 +462,7 @@ class MiniTrainerOSFTBackend(Backend):
             unmask_messages=algorithm_params.get('unmask_messages', False),
             is_pretraining=algorithm_params.get('is_pretraining', False),
             document_column_name=algorithm_params.get('document_column_name'),
+            trust_remote_code=algorithm_params.get('trust_remote_code'),
         )
 
         # adjust arguments to align with the API definition
@@ -470,6 +477,15 @@ class MiniTrainerOSFTBackend(Backend):
                 block_size=block_size,
             )
             training_args_pre['pretraining_config'] = pretraining_config
+
+        if (
+            algorithm_params.get('trust_remote_code') is True
+            and 'trust_remote_code' not in training_args_fields
+        ):
+            raise ValueError(
+                "The installed mini-trainer version does not support `trust_remote_code`. "
+                "Upgrade mini-trainer to a version with Mistral 3 support."
+            )
 
         # mini trainer can support multiple modes, but we don't expose this feature by default
         # to prevent the current API from becoming overly complicated
@@ -501,6 +517,7 @@ class MiniTrainerOSFTBackend(Backend):
         use_processed_dataset: bool,
         is_pretraining: bool = False,
         document_column_name: str | None = None,
+        trust_remote_code: bool | None = None,
     ) -> str:
         """
         Process the data into a format that can be used for training.
@@ -521,12 +538,21 @@ class MiniTrainerOSFTBackend(Backend):
         # otherwise we need to process the data
         os.makedirs(output_dir, exist_ok=True)
 
+        if trust_remote_code is True:
+            # Required for select models that ship custom configuration/model code.
+            os.environ['HF_HUB_TRUST_REMOTE_CODE'] = '1'
+
         # Handle pretraining mode
         if is_pretraining:
             # pass any optional kwargs as-needed
             additional_kwargs = {}
             if document_column_name is not None:
                 additional_kwargs['document_column_name'] = document_column_name
+            if (
+                trust_remote_code is not None
+                and 'trust_remote_code' in inspect.signature(process_documents_for_pretraining).parameters
+            ):
+                additional_kwargs['trust_remote_code'] = trust_remote_code
 
             process_documents_for_pretraining(
                 data_path=data_path,
@@ -545,6 +571,13 @@ class MiniTrainerOSFTBackend(Backend):
                 processing_data_path = os.path.join(output_dir, 'intermediate_data.jsonl')
                 ds.to_json(processing_data_path)
 
+            additional_kwargs = {}
+            if (
+                trust_remote_code is not None
+                and 'trust_remote_code' in inspect.signature(process_messages_into_input_ids).parameters
+            ):
+                additional_kwargs['trust_remote_code'] = trust_remote_code
+
             # now we process the data
             process_messages_into_input_ids(
                 data_path=processing_data_path,
@@ -552,6 +585,7 @@ class MiniTrainerOSFTBackend(Backend):
                 model_path=model_name_or_path,
                 max_seq_len=max_seq_len,
                 num_cpu_procs=num_cpu_procs,
+                **additional_kwargs,
             )
 
         # above function will save to this file, so we pass this to the trainer
@@ -572,7 +606,7 @@ def osft(
     learning_rate: float,
     ckpt_output_dir: str,
     data_output_dir: str | None = None,
-    backend: str = 'mini-trainer',
+    backend: str = 'auto',
     # Optional parameters
     target_patterns: list[str] | None = None,
     seed: int | None = None,
@@ -582,6 +616,7 @@ def osft(
     is_pretraining: bool | None = None,
     block_size: int | None = None,
     document_column_name: str | None = None,
+    trust_remote_code: bool | None = None,
     lr_scheduler: str | None = None,
     warmup_steps: int | None = None,
     lr_scheduler_kwargs: dict[str, str] | None = None,
@@ -613,7 +648,12 @@ def osft(
 ) -> any:
     from . import create_algorithm
 
-    algorithm: OSFTAlgorithm = create_algorithm('osft', backend)
+    algorithm: OSFTAlgorithm = create_algorithm(
+        'osft',
+        backend,
+        model_path_or_architecture=model_path,
+        trust_remote_code=trust_remote_code,
+    )
     return algorithm.train(
         model_path=model_path,
         data_path=data_path,
@@ -632,6 +672,7 @@ def osft(
         is_pretraining=is_pretraining,
         block_size=block_size,
         document_column_name=document_column_name,
+        trust_remote_code=trust_remote_code,
         lr_scheduler=lr_scheduler,
         warmup_steps=warmup_steps,
         lr_scheduler_kwargs=lr_scheduler_kwargs,

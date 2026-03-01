@@ -11,7 +11,7 @@ def sft(
     model_path: str,
     data_path: str,
     ckpt_output_dir: str,
-    backend: str = "instructlab-training",
+    backend: str = "auto",
     num_epochs: Optional[int] = None,
     effective_batch_size: Optional[int] = None,
     learning_rate: Optional[float] = None,
@@ -25,6 +25,7 @@ def sft(
     is_pretraining: Optional[bool] = None,
     block_size: Optional[int] = None,
     document_column_name: Optional[str] = None,
+    trust_remote_code: Optional[bool] = None,
     nproc_per_node: Optional[int] = None,
     nnodes: Optional[int] = None,
     node_rank: Optional[int] = None,
@@ -59,7 +60,8 @@ def sft(
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `backend` | `str` | `"instructlab-training"` | Backend implementation to use for training. Currently only `"instructlab-training"` is supported for SFT. |
+| `backend` | `str` | `"auto"` | Backend implementation to use for training. `\"auto\"` resolves a model-aware backend. You can still force `\"instructlab-training\"` or `\"mini-trainer\"`. |
+| `trust_remote_code` | `bool` | `None` | Passed through to model/config loading paths for backends that support it. Required for some model families (for example Mistral 3). |
 
 #### Training Configuration
 

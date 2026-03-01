@@ -1,18 +1,18 @@
 # RHAI Innovation Mini-Trainer Backend
 
-> Specialized backend for Orthogonal Subspace Fine-Tuning (OSFT) enabling continual learning without catastrophic forgetting.
+> High-performance backend used for SFT and OSFT, including model families that require architecture-aware routing (for example Mistral 3).
 
 ## Overview
 
-**Class:** `MiniTrainerOSFTBackend`
+**Classes:** `MiniTrainerSFTBackend`, `MiniTrainerOSFTBackend`
 
-**Algorithm Support:** OSFT (Orthogonal Subspace Fine-Tuning)
+**Algorithm Support:** SFT (Supervised Fine-Tuning), OSFT (Orthogonal Subspace Fine-Tuning)
 
 **Package:** `rhai-innovation-mini-trainer`
 
 **Status:** ✅ Fully implemented and tested
 
-The RHAI Innovation Mini-Trainer backend provides production-ready OSFT capabilities optimized for continual learning scenarios. It implements the orthogonal subspace decomposition technique from Nayak et al. (2025).
+The RHAI Innovation Mini-Trainer backend provides production-ready distributed training capabilities for both SFT and OSFT workflows.
 
 ## Features
 
